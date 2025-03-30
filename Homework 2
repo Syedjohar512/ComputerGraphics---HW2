@@ -1,0 +1,89 @@
+
+import pygame
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Setting up display
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Draw Line with Toggle Button")
+
+# Colors
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
+
+# Predefined points
+p0 = (100, 300)
+p1 = (700, 300)
+
+# Button implementation
+button_rect = pygame.Rect(350, 500, 100, 40)
+use_euclidean = True  # Default mode
+
+def drawPoint(x, y, color):
+    """Drawing a single pixel at (x, y)"""
+    screen.set_at((int(x), int(y)), color)
+
+def drawLine_Euclidean(p0, p1, color):
+    """Drawing a line using the explicit Euclidean formula"""
+    x0, y0 = p0
+    x1, y1 = p1
+    for x in range(x0, x1 + 1):
+        y = ((y1 - y0) / (x1 - x0)) * (x - x0) + y0 if x1 != x0 else y0
+        drawPoint(x, y, color)
+
+def drawLine_CoordinateFree(p0, p1, color):
+    """Drawing a line using the coordinate-free system"""
+    for t in range(101):
+        a0 = 1 - (t / 100)
+        a1 = t / 100
+        x = a0 * p0[0] + a1 * p1[0]
+        y = a0 * p0[1] + a1 * p1[1]
+        drawPoint(x, y, color)
+
+def drawButton():
+    """Drawing the toggle button on screen"""
+    pygame.draw.rect(screen, GRAY, button_rect, border_radius=5)
+    font = pygame.font.Font(None, 30)
+    text_surface = font.render("Toggle", True, BLACK)
+    text_rect = text_surface.get_rect(center=button_rect.center)
+    screen.blit(text_surface, text_rect)
+
+# Main loop
+running = True
+while running:
+    screen.fill(WHITE)  # Clear screen
+    
+    # Drawing the line based on the mode
+    if use_euclidean:
+        drawLine_Euclidean(p0, p1, RED)
+        mode_text = "Mode: Euclidean Space (y = mx + b)"
+    else:
+        drawLine_CoordinateFree(p0, p1, BLUE)
+        mode_text = "Mode: Coordinate-Free System (P = a0*P0 + a1*P1)"
+    
+    # Displaying mode text
+    font = pygame.font.Font(None, 30)
+    text_surface = font.render(mode_text, True, BLACK)
+    screen.blit(text_surface, (20, 20))
+
+    # Drawing of toggle button
+    drawButton()
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if button_rect.collidepoint(event.pos):  # Check if button is clicked
+                use_euclidean = not use_euclidean  # Toggle mode
+
+    pygame.display.flip()  # Refresh screen
+
+pygame.quit()
+sys.exit()
